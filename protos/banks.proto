@@ -1,0 +1,24 @@
+syntax = "proto3";
+
+package banks;
+
+// Service definition for bank operations
+service BankService {
+  rpc MsgDelivery (Request) returns (Response) {}
+}
+
+// Message for client and branch requests
+message Request {
+  int32 id = 1;               // ID for request (e.g., customer ID)
+  string interface = 2;       // Type of request ("query", "deposit", etc.)
+  int32 money = 3;            // Amount for deposit/withdrawal
+  int32 logical_clock = 4;    // Logical clock for event tracking
+}
+
+// Message for responses to client and branch requests
+message Response {
+  string interface = 1;       // Corresponding interface type in response
+  string result = 2;          // Result of the operation ("success", "fail")
+  int32 balance = 3;          // Balance for "query" responses
+  int32 logical_clock = 4;    // Logical clock in response
+}
