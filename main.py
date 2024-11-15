@@ -24,6 +24,9 @@ if __name__ == '__main__':
     branches = [item for item in data if item['type'] == 'branch']
     customers = [item for item in data if item['type'] == 'customer']
 
+    # Output list for combined processes and events
+    output = []
+
     # Start the branch servers
     executor = futures.ThreadPoolExecutor(max_workers=len(branches))
     branch_futures = [executor.submit(run_branch, branch) for branch in branches]
@@ -32,14 +35,25 @@ if __name__ == '__main__':
     time.sleep(2)
 
     # Process customer events
-    output = []
     for customer in customers:
         result = run_customer(customer)
-        output.append({"id": customer['id'], "recv": result})
+        output.append({
+            "type": "customer",
+            "id": customer['id'],
+            "recv": result
+        })
         # Add a delay to ensure events are processed sequentially
         time.sleep(1)
 
-    # Write the output to a JSON file
+    # Append branch processes to the output
+    for branch in branches:
+        output.append({
+            "type": "branch",
+            "id": branch['id'],
+            "balance": branch['balance']
+        })
+
+    # Write the combined output to a JSON file
     with open('output.json', 'w') as f:
         json.dump(output, f, indent=2)
 
