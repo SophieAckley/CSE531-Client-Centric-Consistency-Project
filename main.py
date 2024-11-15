@@ -1,64 +1,117 @@
+import argparse
 import json
-import time
+import multiprocessing
+import os
 from concurrent import futures
-from branch import Branch
-from customer import Customer
-import server  # The `serve` function from server.py
+from time import sleep
 
-def run_branch(branch_data):
-    """Initialize and start a branch server."""
-    branch = Branch(branch_data['id'], branch_data['balance'], [b['id'] for b in branches])
-    server.serve(branch)
+import grpc
+from termcolor import colored
 
-def run_customer(customer_data):
-    """Create and execute events for a customer."""
-    customer = Customer(customer_data['id'], customer_data['events'])
-    return customer.executeEvents()
+import branch_pb2_grpc
+from Branch import Branch
+from Customer import Customer
 
-if __name__ == '__main__':
-    # Load the input data
-    with open('input.json', 'r') as f:
-        data = json.load(f)
+# Global var to store output file name
+output_filename = None
 
-    # Separate branch and customer data
-    branches = [item for item in data if item['type'] == 'branch']
-    customers = [item for item in data if item['type'] == 'customer']
+# Start branch gRPC server process
+def serveBranch(branch):
+    branch.createStubs()
 
-    # Output list for combined processes and events
-    output = []
+    server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))
+    branch_pb2_grpc.add_BranchServicer_to_server(branch, server)
+    port = str(50000 + branch.id)
+    server.add_insecure_port("[::]:" + port)
+    server.start()
+    server.wait_for_termination()
 
-    # Start the branch servers
-    executor = futures.ThreadPoolExecutor(max_workers=len(branches))
-    branch_futures = [executor.submit(run_branch, branch) for branch in branches]
 
-    # Give the branch servers time to initialize
-    time.sleep(2)
+# Start customer gRPC client processes
+def serveCustomer(customer, output_filename):
+    # Execute events and get Customer balance output
+    output = customer.executeEvents()
 
-    # Process customer events
-    for customer in customers:
-        result = run_customer(customer)
-        output.append({
-            "type": "customer",
-            "id": customer['id'],
-            "recv": result
-        })
-        # Add a delay to ensure events are processed sequentially
-        time.sleep(1)
+    # Interpret existing contents as JSON array & append new output entry
+    output_json = json.load(open(output_filename))
+    output_json.append(output)
 
-    # Append branch processes to the output
+    # Overwrite contents of output file with updated JSON
+    output_file = open(output_filename, "w")
+    output_file.write(json.dumps(output_json, indent=4))
+    output_file.close()
+
+
+# Parse JSON & create objects/processes
+def createProcesses(processes):
+    # List of Customer objects
+    customers = []
+    # List of Customer processes
+    customerProcesses = []
+    # List of Branch objects
+    branches = []
+    # List of Branch IDs
+    branchIds = []
+    # List of Branch processes
+    branchProcesses = []
+
+    # Instantiate Branch objects
+    for process in processes:
+        if process["type"] == "bank":
+            branch = Branch(process["id"], process["balance"], branchIds)
+            branches.append(branch)
+            branchIds.append(branch.id)
+
+    # Spawn Branch processes
     for branch in branches:
-        output.append({
-            "type": "branch",
-            "id": branch['id'],
-            "balance": branch['balance']
-        })
+        branch_process = multiprocessing.Process(target=serveBranch, args=(branch,))
+        branchProcesses.append(branch_process)
+        branch_process.start()
 
-    # Write the combined output to a JSON file
-    with open('output.json', 'w') as f:
-        json.dump(output, f, indent=2)
+    # Allow branch processes to start
+    sleep(0.25)
 
-    # Ensure all branch servers complete their tasks
-    for future in branch_futures:
-        future.result()
+    # Instantiate Customer objects
+    for process in processes:
+        if process["type"] == "customer":
+            customer = Customer(process["id"], process["events"])
+            customers.append(customer)
 
-    print("All processes completed. Output written to output.json.")
+    # Spawn Customer processes
+    for customer in customers:
+        customer_process = multiprocessing.Process(target=serveCustomer, args=(customer, output_filename))
+        customerProcesses.append(customer_process)
+        customer_process.start()
+
+    # Wait for Customer processes to complete
+    for customerProcess in customerProcesses:
+        customerProcess.join()
+
+    # Terminate Branch processes
+    for branchProcess in branchProcesses:
+        branchProcess.terminate()
+
+
+if __name__ == "__main__":
+    # Setup command line argument for 'input_file'
+    parser = argparse.ArgumentParser()
+    parser.add_argument("input_file")
+    args = parser.parse_args()
+
+    try:
+        # Load JSON file from 'input_file' arg
+        input_file = open(args.input_file)
+        input_json = json.load(input_file)
+
+        # Initialize output file
+        output_filename = "output/" + os.path.basename(input_file.name)
+        output_file = open(output_filename, "w")
+        output_file.write("[]")
+        output_file.close()
+
+        # Create objects/processes from input file
+        createProcesses(input_json)
+    except FileNotFoundError:
+        print(colored("Could not find input file '" + args.input_file + "'", "red"))
+    except json.decoder.JSONDecodeError:
+        print(colored("Error decoding JSON file", "red"))
