@@ -1,128 +1,207 @@
 [
-    {
+  {
+    "id": 1,
+    "balance": [
+      {
         "id": 1,
-        "type": "branch",
-        "events": [
-            {
-                "customer_request_id": 2,
-                "logical_clock": 5,
-                "interface": "deposit_propagate_request",
-                "comment": "event_recv from branch 2"
-            },
-            {
-                "customer_request_id": 2,
-                "logical_clock": 6,
-                "interface": "deposit_propagate_execute",
-                "comment": "event_exec on branch 1"
-            },
-            {
-                "customer_request_id": 4,
-                "logical_clock": 7,
-                "interface": "withdraw_propagate_request",
-                "comment": "event_recv from branch 2"
-            },
-            {
-                "customer_request_id": 4,
-                "logical_clock": 8,
-                "interface": "withdraw_propagate_execute",
-                "comment": "event_exec on branch 1"
-            }
-        ]
-    },
-    {
-        "id": 2,
-        "type": "branch",
-        "events": [
-            {
-                "customer_request_id": 2,
-                "logical_clock": 2,
-                "interface": "deposit_request",
-                "comment": "event_recv from customer"
-            },
-            {
-                "customer_request_id": 2,
-                "logical_clock": 3,
-                "interface": "deposit_execute",
-                "comment": "event_exec on branch 2"
-            },
-            {
-                "customer_request_id": 2,
-                "logical_clock": 4,
-                "interface": "deposit_response",
-                "comment": "event_sent to customer"
-            },
-            {
-                "customer_request_id": 2,
-                "logical_clock": 7,
-                "interface": "deposit_propagate_response",
-                "comment": "event_recv from branch 1"
-            },
-            {
-                "customer_request_id": 4,
-                "logical_clock": 10,
-                "interface": "withdraw_propagate_request",
-                "comment": "event_recv from branch 1"
-            },
-            {
-                "customer_request_id": 4,
-                "logical_clock": 11,
-                "interface": "withdraw_propagate_execute",
-                "comment": "event_exec on branch 2"
-            },
-            {
-                "customer_request_id": 2,
-                "logical_clock": 12,
-                "interface": "deposit_propagate_response",
-                "comment": "event_sent to branch 1"
-            }
-        ]
-    },
-    {
+        "interface": "query",
+        "balance": 0
+      },
+      {
         "id": 3,
-        "type": "branch",
-        "events": [
-            {
-                "customer_request_id": 4,
-                "logical_clock": 2,
-                "interface": "withdraw_request",
-                "comment": "event_recv from customer"
-            },
-            {
-                "customer_request_id": 4,
-                "logical_clock": 3,
-                "interface": "withdraw_execute",
-                "comment": "event_exec on branch 3"
-            },
-            {
-                "customer_request_id": 4,
-                "logical_clock": 4,
-                "interface": "withdraw_response",
-                "comment": "event_sent to customer"
-            },
-            {
-                "customer_request_id": 4,
-                "logical_clock": 9,
-                "interface": "withdraw_propagate_response",
-                "comment": "event_recv from branch 2"
-            },
-            {
-                "customer_request_id": 2,
-                "logical_clock": 10,
-                "interface": "deposit_propagate_request",
-                "comment": "event_recv from branch 2"
-            },
-            {
-                "customer_request_id": 2,
-                "logical_clock": 11,
-                "interface": "deposit_propagate_execute",
-                "comment": "event_exec on branch 3"
-            },
-            {
-                "customer_request_id": 4,
-                "logical_clock": 12,
-                "interface": "withdraw_propagate_response",
-                "comment": "event_sent to branch 1"
-            }
-        ]
-    }
+        "interface": "query",
+        "balance": 0
+      },
+      {
+        "id": 4,
+        "interface": "query",
+        "balance": 0
+      },
+      {
+        "id": 6,
+        "interface": "query",
+        "balance": 0
+      },
+      {
+        "id": 7,
+        "interface": "query",
+        "balance": 0
+      },
+      {
+        "id": 9,
+        "interface": "query",
+        "balance": 0
+      },
+      {
+        "id": 10,
+        "interface": "query",
+        "balance": 0
+      },
+      {
+        "id": 12,
+        "interface": "query",
+        "balance": 0
+      },
+      {
+        "id": 13,
+        "interface": "query",
+        "balance": 0
+      },
+      {
+        "id": 5,
+        "interface": "query",
+        "balance": 0
+      },
+      {
+        "id": 16,
+        "interface": "query",
+        "balance": 0
+      },
+      {
+        "id": 18,
+        "interface": "query",
+        "balance": 0
+      },
+      {
+        "id": 19,
+        "interface": "query",
+        "balance": 0
+      },
+      {
+        "id": 21,
+        "interface": "query",
+        "balance": 0
+      },
+      {
+        "id": 22,
+        "interface": "query",
+        "balance": 0
+      },
+      {
+        "id": 24,
+        "interface": "query",
+        "balance": 0
+      },
+      {
+        "id": 25,
+        "interface": "query",
+        "balance": 0
+      },
+      {
+        "id": 27,
+        "interface": "query",
+        "balance": 0
+      },
+      {
+        "id": 28,
+        "interface": "query",
+        "balance": 0
+      },
+      {
+        "id": 30,
+        "interface": "query",
+        "balance": 0
+      },
+      {
+        "id": 31,
+        "interface": "query",
+        "balance": 0
+      },
+      {
+        "id": 33,
+        "interface": "query",
+        "balance": 0
+      },
+      {
+        "id": 34,
+        "interface": "query",
+        "balance": 0
+      },
+      {
+        "id": 36,
+        "interface": "query",
+        "balance": 0
+      },
+      {
+        "id": 37,
+        "interface": "query",
+        "balance": 0
+      },
+      {
+        "id": 39,
+        "interface": "query",
+        "balance": 0
+      },
+      {
+        "id": 40,
+        "interface": "query",
+        "balance": 0
+      },
+      {
+        "id": 42,
+        "interface": "query",
+        "balance": 0
+      },
+      {
+        "id": 43,
+        "interface": "query",
+        "balance": 0
+      },
+      {
+        "id": 45,
+        "interface": "query",
+        "balance": 0
+      },
+      {
+        "id": 46,
+        "interface": "query",
+        "balance": 0
+      },
+      {
+        "id": 48,
+        "interface": "query",
+        "balance": 0
+      },
+      {
+        "id": 49,
+        "interface": "query",
+        "balance": 0
+      },
+      {
+        "id": 51,
+        "interface": "query",
+        "balance": 0
+      },
+      {
+        "id": 52,
+        "interface": "query",
+        "balance": 0
+      },
+      {
+        "id": 54,
+        "interface": "query",
+        "balance": 0
+      },
+      {
+        "id": 55,
+        "interface": "query",
+        "balance": 0
+      },
+      {
+        "id": 57,
+        "interface": "query",
+        "balance": 0
+      },
+      {
+        "id": 58,
+        "interface": "query",
+        "balance": 0
+      },
+      {
+        "id": 60,
+        "interface": "query",
+        "balance": 0
+      }
+    ]
+  }
 ]
