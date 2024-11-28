@@ -2,33 +2,66 @@ import grpc
 import banks_pb2
 import banks_pb2_grpc
 import time
+import logging
+
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 class Customer:
-    def __init__(self, id, events):
+    def __init__(self, id, events, sleep_duration=0.5):
         self.id = id
         self.events = events
         self.recvMsg = []
         self.stub = None
+        self.sleep_duration = sleep_duration
+        self.writeset = set()
 
-    def createStub(self):
-        channel = grpc.insecure_channel(f'localhost:{50000 + self.id}')
-        self.stub = banks_pb2_grpc.BankServiceStub(channel)
+    def createStub(self, branch_id):
+        try:
+            channel = grpc.insecure_channel(f'localhost:{50000 + branch_id}')
+            self.stub = banks_pb2_grpc.RPCStub(channel)
+            logger.info(f"Stub created for Customer {self.id} to connect to Branch {branch_id}")
+        except grpc.RpcError as e:
+            logger.error(f"Failed to create stub for Customer {self.id} to Branch {branch_id}: {e.details()}")
 
-    def executeEvents(self):
-        if not self.stub:
-            self.createStub()
-
-        logical_clock = 0
+    def execute_events(self):
         for event in self.events:
-            logical_clock += 1  # Increment clock for each event
+            interface = event.get('interface')
+            branch_id = event.get('branch')
+            
+            if interface not in ['query', 'deposit', 'withdraw']:
+                logger.error(f"Invalid interface '{interface}' in event {event['id']}")
+                continue
+
+            self.createStub(branch_id)
+
             request = banks_pb2.Request(
                 id=event['id'],
-                interface=event['interface'],
+                interface=interface,
                 money=event.get('money', 0),
-                logical_clock=logical_clock
+                writeset=list(self.writeset)
             )
-            response = self.stub.MsgDelivery(request)
-            logical_clock = max(logical_clock, response.logical_clock) + 1
-            self.recvMsg.append(response)
-            time.sleep(0.5)
+
+            try:
+                response = self.stub.MsgDelivery(request)
+                if interface == 'query':
+                    self.recvMsg.append({
+                        "id": event['id'],
+                        "interface": "query",
+                        "balance": response.balance
+                    })
+                else:
+                    self.recvMsg.append({
+                        "id": event['id'],
+                        "interface": interface,
+                        "result": response.result
+                    })
+                    if response.result == "success" and interface in ['deposit', 'withdraw']:
+                        self.writeset.add(response.write_id)
+
+            except grpc.RpcError as e:
+                logger.error(f"Error executing {interface} for Customer {self.id} on Branch {branch_id}: {e.details()}")
+
+            time.sleep(self.sleep_duration)
+
         return self.recvMsg
