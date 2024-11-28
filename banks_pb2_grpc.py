@@ -5,10 +5,8 @@ import warnings
 
 from protos import banks_pb2 as protos_dot_banks__pb2
 
-GRPC_GENERATED_VERSION = '1.64.1'
+GRPC_GENERATED_VERSION = '1.68.0'
 GRPC_VERSION = grpc.__version__
-EXPECTED_ERROR_RELEASE = '1.65.0'
-SCHEDULED_RELEASE_DATE = 'June 25, 2024'
 _version_not_supported = False
 
 try:
@@ -18,20 +16,18 @@ except ImportError:
     _version_not_supported = True
 
 if _version_not_supported:
-    warnings.warn(
+    raise RuntimeError(
         f'The grpc package installed is at version {GRPC_VERSION},'
         + f' but the generated code in protos/banks_pb2_grpc.py depends on'
         + f' grpcio>={GRPC_GENERATED_VERSION}.'
         + f' Please upgrade your grpc module to grpcio>={GRPC_GENERATED_VERSION}'
         + f' or downgrade your generated code using grpcio-tools<={GRPC_VERSION}.'
-        + f' This warning will become an error in {EXPECTED_ERROR_RELEASE},'
-        + f' scheduled for release on {SCHEDULED_RELEASE_DATE}.',
-        RuntimeWarning
     )
 
 
-class BankStub(object):
-    """Missing associated documentation comment in .proto file."""
+class BankServiceStub(object):
+    """Bank Service Definition
+    """
 
     def __init__(self, channel):
         """Constructor.
@@ -39,40 +35,48 @@ class BankStub(object):
         Args:
             channel: A grpc.Channel.
         """
+        self.MsgDelivery = channel.unary_unary(
+                '/banking.BankService/MsgDelivery',
+                request_serializer=protos_dot_banks__pb2.Request.SerializeToString,
+                response_deserializer=protos_dot_banks__pb2.Response.FromString,
+                _registered_method=True)
         self.Query = channel.unary_unary(
-                '/banks.Bank/Query',
+                '/banking.BankService/Query',
                 request_serializer=protos_dot_banks__pb2.QueryRequest.SerializeToString,
                 response_deserializer=protos_dot_banks__pb2.QueryResponse.FromString,
                 _registered_method=True)
         self.Deposit = channel.unary_unary(
-                '/banks.Bank/Deposit',
+                '/banking.BankService/Deposit',
                 request_serializer=protos_dot_banks__pb2.DepositRequest.SerializeToString,
                 response_deserializer=protos_dot_banks__pb2.DepositResponse.FromString,
                 _registered_method=True)
         self.Withdraw = channel.unary_unary(
-                '/banks.Bank/Withdraw',
+                '/banking.BankService/Withdraw',
                 request_serializer=protos_dot_banks__pb2.WithdrawRequest.SerializeToString,
                 response_deserializer=protos_dot_banks__pb2.WithdrawResponse.FromString,
                 _registered_method=True)
         self.PropagateDeposit = channel.unary_unary(
-                '/banks.Bank/PropagateDeposit',
-                request_serializer=protos_dot_banks__pb2.PropagateDepositRequest.SerializeToString,
-                response_deserializer=protos_dot_banks__pb2.PropagateDepositResponse.FromString,
+                '/banking.BankService/PropagateDeposit',
+                request_serializer=protos_dot_banks__pb2.PropagateRequest.SerializeToString,
+                response_deserializer=protos_dot_banks__pb2.PropagateResponse.FromString,
                 _registered_method=True)
         self.PropagateWithdraw = channel.unary_unary(
-                '/banks.Bank/PropagateWithdraw',
-                request_serializer=protos_dot_banks__pb2.PropagateWithdrawRequest.SerializeToString,
-                response_deserializer=protos_dot_banks__pb2.PropagateWithdrawResponse.FromString,
-                _registered_method=True)
-        self.InitializeBranch = channel.unary_unary(
-                '/banks.Bank/InitializeBranch',
-                request_serializer=protos_dot_banks__pb2.BranchInfo.SerializeToString,
-                response_deserializer=protos_dot_banks__pb2.InitializationResponse.FromString,
+                '/banking.BankService/PropagateWithdraw',
+                request_serializer=protos_dot_banks__pb2.PropagateRequest.SerializeToString,
+                response_deserializer=protos_dot_banks__pb2.PropagateResponse.FromString,
                 _registered_method=True)
 
 
-class BankServicer(object):
-    """Missing associated documentation comment in .proto file."""
+class BankServiceServicer(object):
+    """Bank Service Definition
+    """
+
+    def MsgDelivery(self, request, context):
+        """Customer-to-Branch Interfaces
+        """
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
 
     def Query(self, request, context):
         """Missing associated documentation comment in .proto file."""
@@ -93,7 +97,8 @@ class BankServicer(object):
         raise NotImplementedError('Method not implemented!')
 
     def PropagateDeposit(self, request, context):
-        """Missing associated documentation comment in .proto file."""
+        """Branch-to-Branch Interfaces
+        """
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
@@ -104,15 +109,14 @@ class BankServicer(object):
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
-    def InitializeBranch(self, request, context):
-        """Missing associated documentation comment in .proto file."""
-        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
-        context.set_details('Method not implemented!')
-        raise NotImplementedError('Method not implemented!')
 
-
-def add_BankServicer_to_server(servicer, server):
+def add_BankServiceServicer_to_server(servicer, server):
     rpc_method_handlers = {
+            'MsgDelivery': grpc.unary_unary_rpc_method_handler(
+                    servicer.MsgDelivery,
+                    request_deserializer=protos_dot_banks__pb2.Request.FromString,
+                    response_serializer=protos_dot_banks__pb2.Response.SerializeToString,
+            ),
             'Query': grpc.unary_unary_rpc_method_handler(
                     servicer.Query,
                     request_deserializer=protos_dot_banks__pb2.QueryRequest.FromString,
@@ -130,29 +134,52 @@ def add_BankServicer_to_server(servicer, server):
             ),
             'PropagateDeposit': grpc.unary_unary_rpc_method_handler(
                     servicer.PropagateDeposit,
-                    request_deserializer=protos_dot_banks__pb2.PropagateDepositRequest.FromString,
-                    response_serializer=protos_dot_banks__pb2.PropagateDepositResponse.SerializeToString,
+                    request_deserializer=protos_dot_banks__pb2.PropagateRequest.FromString,
+                    response_serializer=protos_dot_banks__pb2.PropagateResponse.SerializeToString,
             ),
             'PropagateWithdraw': grpc.unary_unary_rpc_method_handler(
                     servicer.PropagateWithdraw,
-                    request_deserializer=protos_dot_banks__pb2.PropagateWithdrawRequest.FromString,
-                    response_serializer=protos_dot_banks__pb2.PropagateWithdrawResponse.SerializeToString,
-            ),
-            'InitializeBranch': grpc.unary_unary_rpc_method_handler(
-                    servicer.InitializeBranch,
-                    request_deserializer=protos_dot_banks__pb2.BranchInfo.FromString,
-                    response_serializer=protos_dot_banks__pb2.InitializationResponse.SerializeToString,
+                    request_deserializer=protos_dot_banks__pb2.PropagateRequest.FromString,
+                    response_serializer=protos_dot_banks__pb2.PropagateResponse.SerializeToString,
             ),
     }
     generic_handler = grpc.method_handlers_generic_handler(
-            'banks.Bank', rpc_method_handlers)
+            'banking.BankService', rpc_method_handlers)
     server.add_generic_rpc_handlers((generic_handler,))
-    server.add_registered_method_handlers('banks.Bank', rpc_method_handlers)
+    server.add_registered_method_handlers('banking.BankService', rpc_method_handlers)
 
 
  # This class is part of an EXPERIMENTAL API.
-class Bank(object):
-    """Missing associated documentation comment in .proto file."""
+class BankService(object):
+    """Bank Service Definition
+    """
+
+    @staticmethod
+    def MsgDelivery(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(
+            request,
+            target,
+            '/banking.BankService/MsgDelivery',
+            protos_dot_banks__pb2.Request.SerializeToString,
+            protos_dot_banks__pb2.Response.FromString,
+            options,
+            channel_credentials,
+            insecure,
+            call_credentials,
+            compression,
+            wait_for_ready,
+            timeout,
+            metadata,
+            _registered_method=True)
 
     @staticmethod
     def Query(request,
@@ -168,7 +195,7 @@ class Bank(object):
         return grpc.experimental.unary_unary(
             request,
             target,
-            '/banks.Bank/Query',
+            '/banking.BankService/Query',
             protos_dot_banks__pb2.QueryRequest.SerializeToString,
             protos_dot_banks__pb2.QueryResponse.FromString,
             options,
@@ -195,7 +222,7 @@ class Bank(object):
         return grpc.experimental.unary_unary(
             request,
             target,
-            '/banks.Bank/Deposit',
+            '/banking.BankService/Deposit',
             protos_dot_banks__pb2.DepositRequest.SerializeToString,
             protos_dot_banks__pb2.DepositResponse.FromString,
             options,
@@ -222,7 +249,7 @@ class Bank(object):
         return grpc.experimental.unary_unary(
             request,
             target,
-            '/banks.Bank/Withdraw',
+            '/banking.BankService/Withdraw',
             protos_dot_banks__pb2.WithdrawRequest.SerializeToString,
             protos_dot_banks__pb2.WithdrawResponse.FromString,
             options,
@@ -249,9 +276,9 @@ class Bank(object):
         return grpc.experimental.unary_unary(
             request,
             target,
-            '/banks.Bank/PropagateDeposit',
-            protos_dot_banks__pb2.PropagateDepositRequest.SerializeToString,
-            protos_dot_banks__pb2.PropagateDepositResponse.FromString,
+            '/banking.BankService/PropagateDeposit',
+            protos_dot_banks__pb2.PropagateRequest.SerializeToString,
+            protos_dot_banks__pb2.PropagateResponse.FromString,
             options,
             channel_credentials,
             insecure,
@@ -276,36 +303,9 @@ class Bank(object):
         return grpc.experimental.unary_unary(
             request,
             target,
-            '/banks.Bank/PropagateWithdraw',
-            protos_dot_banks__pb2.PropagateWithdrawRequest.SerializeToString,
-            protos_dot_banks__pb2.PropagateWithdrawResponse.FromString,
-            options,
-            channel_credentials,
-            insecure,
-            call_credentials,
-            compression,
-            wait_for_ready,
-            timeout,
-            metadata,
-            _registered_method=True)
-
-    @staticmethod
-    def InitializeBranch(request,
-            target,
-            options=(),
-            channel_credentials=None,
-            call_credentials=None,
-            insecure=False,
-            compression=None,
-            wait_for_ready=None,
-            timeout=None,
-            metadata=None):
-        return grpc.experimental.unary_unary(
-            request,
-            target,
-            '/banks.Bank/InitializeBranch',
-            protos_dot_banks__pb2.BranchInfo.SerializeToString,
-            protos_dot_banks__pb2.InitializationResponse.FromString,
+            '/banking.BankService/PropagateWithdraw',
+            protos_dot_banks__pb2.PropagateRequest.SerializeToString,
+            protos_dot_banks__pb2.PropagateResponse.FromString,
             options,
             channel_credentials,
             insecure,
