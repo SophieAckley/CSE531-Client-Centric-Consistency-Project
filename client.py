@@ -9,6 +9,13 @@ def run_customer(customer_data):
     customer = Customer(customer_data['id'], customer_data['events'])
     return customer.execute_events()
 
+def create_stub(branch_id):
+    """Create a gRPC stub for the specified branch ID."""
+    port = 50000 + branch_id  # Map branch ID to its port
+    channel = grpc.insecure_channel(f'localhost:{port}')
+    return banks_pb2_grpc.BankServiceStub(channel)
+
+
 if __name__ == '__main__':
     import sys
     
