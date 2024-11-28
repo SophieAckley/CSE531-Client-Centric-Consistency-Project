@@ -1,28 +1,38 @@
 import json
+import time
 import grpc
 import banks_pb2
 import banks_pb2_grpc
-import time
+from customer import Customer
 
-def run_customer(customer_id, events):
-    channel = grpc.insecure_channel(f'localhost:{50000 + customer_id}')
-    stub = banks_pb2_grpc.BankServiceStub(channel)
+def run_customer(customer_data):
+    customer = Customer(customer_data['id'], customer_data['events'])
+    return customer.execute_events()
 
-    for event in events:
-        request = banks_pb2.Request(
-            id=event['id'],
-            interface=event['interface'],
-            money=event.get('money', 0),
-            logical_clock=0  # Initial clock value; will be updated in responses
-        )
-        response = stub.MsgDelivery(request)
-        print(f"Customer {customer_id} received response: {response}")
-        time.sleep(0.5)
+if __name__ == '__main__':
+    import sys
+    
+    if len(sys.argv) != 2:
+        print("Usage: python client.py input.json")
+        sys.exit(1)
 
-# Load input and run clients
-with open('input.json') as f:
-    data = json.load(f)
+    input_file = sys.argv[1]
+    
+    with open(input_file, 'r') as f:
+        data = json.load(f)
+
     customers = [item for item in data if item['type'] == 'customer']
+    output = []
 
-for customer in customers:
-    run_customer(customer['id'], customer['events'])
+    for customer in customers:
+        result = run_customer(customer)
+        if any(event['interface'] == 'query' for event in customer['events']):
+            output.append({"id": customer['id'], "balance": result})
+        else:
+            output.append({"id": customer['id'], "balance": result[-1] if result else 0})
+        time.sleep(0.5)  # Short delay between customers
+
+    with open('output.json', 'w') as f:
+        json.dump(output, f, indent=2)
+
+    print("All customer processes completed. Output written to output.json")
