@@ -2,57 +2,77 @@ syntax = "proto3";
 
 package banking;
 
-// 定义银行服务
+// Bank Service Definition
 service BankService {
-  // 客户到分支的接口
+  // Customer-to-Branch Interfaces
+  rpc MsgDelivery(Request) returns (Response);
   rpc Query (QueryRequest) returns (QueryResponse) {}
   rpc Deposit (DepositRequest) returns (DepositResponse) {}
   rpc Withdraw (WithdrawRequest) returns (WithdrawResponse) {}
 
-  // 分支之间的接口
+  // Branch-to-Branch Interfaces
   rpc PropagateDeposit (PropagateRequest) returns (PropagateResponse) {}
   rpc PropagateWithdraw (PropagateRequest) returns (PropagateResponse) {}
 }
 
-// 查询请求
+// Query Request and Response
 message QueryRequest {
-  int32 customer_id = 1;
+  int32 customer_id = 1;        // Unique customer ID
+  repeated int32 writeset = 2;  // Writeset to track write operations
 }
 
-// 查询响应
 message QueryResponse {
-  int32 balance = 1;
+  int32 balance = 1;            // Current balance
+  repeated int32 writeset = 2;  // Updated writeset
 }
 
-// 存款请求
+// Deposit Request and Response
 message DepositRequest {
-  int32 customer_id = 1;
-  int32 amount = 2;
+  int32 customer_id = 1;        // Unique customer ID
+  int32 amount = 2;             // Amount to deposit
+  repeated int32 writeset = 3;  // Writeset to track write operations
 }
 
-// 存款响应
 message DepositResponse {
-  string result = 1;
+  string result = 1;            // Result of the operation ("success", "fail")
+  repeated int32 writeset = 2;  // Updated writeset
 }
 
-// 取款请求
+// Withdraw Request and Response
 message WithdrawRequest {
-  int32 customer_id = 1;
-  int32 amount = 2;
+  int32 customer_id = 1;        // Unique customer ID
+  int32 amount = 2;             // Amount to withdraw
+  repeated int32 writeset = 3;  // Writeset to track write operations
 }
 
-// 取款响应
 message WithdrawResponse {
-  string result = 1;
+  string result = 1;            // Result of the operation ("success", "fail")
+  repeated int32 writeset = 2;  // Updated writeset
 }
 
-// 传播请求（用于存款和取款）
+// Propagation Request and Response (for Deposit/Withdraw)
 message PropagateRequest {
-  int32 branch_id = 1;
-  int32 amount = 2;
+  int32 branch_id = 1;          // Source branch ID
+  int32 amount = 2;             // Amount to propagate
+  repeated int32 writeset = 3;  // Writeset to track write operations
 }
 
-// 传播响应
 message PropagateResponse {
-  string result = 1;
+  string result = 1;            // Result of the propagation ("success", "fail")
+  repeated int32 writeset = 2;  // Updated writeset
+}
+
+message Request {
+  int32 id = 1;                // Unique ID for the request
+  string interface = 2;        // Request type (e.g., "query", "deposit", "withdraw")
+  int32 money = 3;             // Amount of money for deposit/withdraw
+  int32 dest = 4;              // Target branch ID
+  repeated int32 writeset = 5; // Writeset for client consistency
+}
+
+message Response {
+  string interface = 1;        // Response type
+  string result = 2;           // Result ("success" or "fail")
+  int32 balance = 3;           // Balance for queries
+  repeated int32 writeset = 4; // Updated writeset
 }
