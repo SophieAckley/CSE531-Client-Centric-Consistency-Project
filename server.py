@@ -1,48 +1,37 @@
-import json
-import time
-from concurrent import futures
 import grpc
-import banks_pb2
+from concurrent import futures
 import banks_pb2_grpc
 from branch import Branch
 
-def serve(branch):
+def serve(branch, port):
     server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))
     banks_pb2_grpc.add_BankServiceServicer_to_server(branch, server)
-    server.add_insecure_port(f'[::]:{50000 + branch.id}')
+    server.add_insecure_port(f'[::]:{port}')
     server.start()
+    print(f"Branch {branch.id} started on port {port}")
     return server
 
-if __name__ == '__main__':
+if __name__ == "__main__":
+    import json
     import sys
-    
+
     if len(sys.argv) != 2:
         print("Usage: python server.py input.json")
         sys.exit(1)
 
-    input_file = sys.argv[1]
-    
-    with open(input_file, 'r') as f:
+    with open(sys.argv[1], 'r') as f:
         data = json.load(f)
 
-    branches = [item for item in data if item['type'] == 'branch']
-    branch_processes = []
-
+    branches = [item for item in data if item["type"] == "branch"]
+    servers = []
     for branch_data in branches:
-        branch = Branch(
-            id=branch_data['id'],
-            balance=branch_data['balance'],
-            branches=[b['id'] for b in branches]
-        )
-        server = serve(branch)
-        branch_processes.append((branch, server))
-
-    print(f"Started {len(branch_processes)} branch servers")
+        branch = Branch(branch_data["id"], branch_data["balance"], [b["id"] for b in branches])
+        port = 50000 + branch_data["id"]
+        servers.append(serve(branch, port))
 
     try:
         while True:
-            time.sleep(86400)  # Sleep for a day
+            time.sleep(86400)
     except KeyboardInterrupt:
-        print("Stopping servers...")
-        for _, server in branch_processes:
+        for server in servers:
             server.stop(0)
