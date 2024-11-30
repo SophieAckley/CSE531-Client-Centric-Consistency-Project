@@ -1,7 +1,7 @@
 [
   {
     "id": 1,
-    "recv": [
+    "balance": [
       { "id": 1, "interface": "query", "branch": 1, "balance": 0 },
       { "id": 2, "interface": "deposit", "branch": 1, "result": "success" },
       { "id": 3, "interface": "query", "branch": 1, "balance": 10 },
